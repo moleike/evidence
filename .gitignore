@@ -1,0 +1,14 @@
+target
+/bin/
+*.log
+*.log.*
+*.zip
+*.DS_Store
+.direnv
+.metals
+.bloop
+project/**/metals.sbt
+.bsp
+.pre-commit-config.yaml
+.idea
+*.iml
