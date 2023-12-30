@@ -2,6 +2,7 @@ package evidence
 package effect
 
 import cats.implicits._
+import evidence.Ctx.In
 
 type State[A] = [E, Ans] =>> State.Syn[A, E, Ans]
 
@@ -9,6 +10,8 @@ object State:
   trait Syn[A, E, Ans]:
     def get: Op[Unit, A, E, Ans]
     def put: Op[A, Unit, E, Ans]
+
+  def apply[A]: Ops[A] = new Ops[A]
 
   // handler using the state-as-a-function representation
   def state[A, E, Ans](init: A): Eff[State[A] :* E, Ans] => Eff[E, (Ans, A)] =
@@ -25,12 +28,13 @@ object State:
         result <- f(init)
       yield result
 
-  def get[A, E]: State[A] :? E ?=> Eff[E, A] =
-    Eff.perform[Unit, A, E, State[A]](
-      [EE, Ans] => (r: Syn[A, EE, Ans]) => r.get
-    )(())
+  private[evidence] final class Ops[A](val dummy: Boolean = true) extends AnyVal:
+    def get[E](using In[State[A], E]): Eff[E, A] =
+      Eff.perform[Unit, A, E, State[A]](
+        [EE, Ans] => (r: Syn[A, EE, Ans]) => r.get
+      )(())
 
-  def put[A, E](a: A): State[A] :? E ?=> Eff[E, Unit] =
-    Eff.perform[A, Unit, E, State[A]](
-      [EE, Ans] => (r: Syn[A, EE, Ans]) => r.put
-    )(a)
+    def put[E](a: A)(using In[State[A], E]): Eff[E, Unit] =
+      Eff.perform[A, Unit, E, State[A]](
+        [EE, Ans] => (r: Syn[A, EE, Ans]) => r.put
+      )(a)

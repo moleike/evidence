@@ -100,8 +100,8 @@ object Example:
 
     def invert[E]: State[Boolean] :? E ?=> Eff[E, Unit] =
       for
-        a <- State.get
-        _ <- State.put(!a)
+        a <- State[Boolean].get
+        _ <- State[Boolean].put(!a)
       yield ()
 
     println(State.state(true)(invert).run)

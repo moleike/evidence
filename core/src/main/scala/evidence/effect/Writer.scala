@@ -34,7 +34,7 @@ object Writer:
       Eff.handlerHide(
         new Syn[A, State[A] :* E, Ans]:
           val tell =
-            Op.function(x => State.get.flatMap(xs => State.put(xs.combine(x))))
+            Op.function(x => State[A].get.flatMap(xs => State[A].put(xs.combine(x))))
         ,
         action
       )
