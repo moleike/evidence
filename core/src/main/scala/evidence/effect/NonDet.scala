@@ -12,12 +12,12 @@ object NonDet:
 
   def choose[E]: NonDet :? E ?=> Eff[E, Boolean] =
     Eff.perform[Unit, Boolean, E, NonDet](
-      [EE, Ans] => (e: Syn[EE, Ans]) => e.choose
+      [EE, Ans] => (_: NonDet[EE, Ans]).choose
     )(())
 
   def empty[E]: NonDet :? E ?=> Eff[E, Nothing] =
     Eff.perform[Unit, Nothing, E, NonDet](
-      [EE, Ans] => (e: Syn[EE, Ans]) => e.empty
+      [EE, Ans] => (_: NonDet[EE, Ans]).empty
     )(())
 
   def allResults[E, Ans]: Eff[NonDet :* E, Ans] => Eff[E, Seq[Ans]] =

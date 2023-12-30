@@ -21,14 +21,14 @@ object Example:
       yield s"Hello, $p, $a times!"
 
     def greet5Times[E]: Reader[String] :? E ?=> Eff[E, String] =
-      Reader.const(5L)(greet)
+      Reader[Long].const(5L)(greet)
 
-    println(Reader.const("Leiva")(greet5Times).run)
+    println(Reader[String].const("Leiva")(greet5Times).run)
 
     def there[E]: Eff[Reader[String] :* E, String] =
-      Reader.scope("there")(greet5Times)
+      Reader[String].scope("there")(greet5Times)
 
-    println(Reader.const("Leiva")(there).run)
+    println(Reader[String].const("Leiva")(there).run)
 
     // using cats-mtl
 
@@ -45,7 +45,7 @@ object Example:
     object DivByZeroError extends Throwable
 
     def div[E](x: Long, y: Long): Except[Throwable] :? E ?=> Eff[E, Long] =
-      if y == 0 then Except.raise(DivByZeroError)
+      if y == 0 then Except[Throwable].raise(DivByZeroError)
       else (x / y).pure
 
     println(div(42, 0).toEither.run)
@@ -54,7 +54,7 @@ object Example:
         x: Long,
         y: Long
     ): Except[Throwable] :? E ?=> Eff[E, Long] =
-      Except.recover[Throwable, E, Long] { case DivByZeroError =>
+      Except[Throwable].recover { case DivByZeroError =>
         0L
       }(div(x, y))
 
@@ -83,13 +83,13 @@ object Example:
         name <- Reader[String].ask
         str <-
           if name == "Joe" then "nice!".pure[Eff[E, *]]
-          else Except.raise("ouch")
+          else Except[String].raise("ouch")
         _ <- Console.println(s"His name is $name")
       yield str
 
     println(
       (State
-        .state(0)(Reader.const("Joe")(Except.handleError(_ => "not Joe")(foo))))
+        .state(0)(Reader[String].const("Joe")(Except[String].handleError(_ => "not Joe")(foo))))
         .runC
     )
 
@@ -110,8 +110,8 @@ object Example:
 
     def ex[E]: Writer[Log] :? E ?=> Eff[E, Unit] =
       for
-        _ <- Writer.tell(Chain.one("foo"))
-        _ <- Writer.tell(Chain.one("bar"))
+        _ <- Writer[Log].tell(Chain.one("foo"))
+        _ <- Writer[Log].tell(Chain.one("bar"))
       yield ()
 
     println(ex.runW.run)
@@ -156,9 +156,9 @@ object Example:
 
     def ex2[E]: Chronicle[String] :? E ?=> Eff[E, Int] =
       for
-        _ <- Chronicle.dictate("foo")
-        _ <- Chronicle.dictate("bar")
-      // _ <- Chronicle.confess("ohoh")
+        _ <- Chronicle[String].dictate("foo")
+        _ <- Chronicle[String].dictate("bar")
+        //_ <- Chronicle[String].confess("ohoh")
       yield 42
 
-    println(Chronicle.materialize[String, Int, Nothing](ex2).run)
+    println(Chronicle.materialize[Nothing, String, Int](ex2).run)

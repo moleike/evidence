@@ -12,12 +12,12 @@ object Console:
 
   def println[E](msg: String): Console :? E ?=> Eff[E, Unit] =
     Eff.perform[String, Unit, E, Console](
-      [EE, Ans] => (e: Syn[EE, Ans]) => e.println
+      [EE, Ans] => (_: Console[EE, Ans]).println
     )(msg)
 
   def readLine[E]: Console :? E ?=> Eff[E, String] =
     Eff.perform[Unit, String, E, Console](
-      [EE, Ans] => (e: Syn[EE, Ans]) => e.readLine
+      [EE, Ans] => (_: Console[EE, Ans]).readLine
     )(())
 
   def console[E, Ans]: Eff[Console :* E, Ans] => Eff[E, Ans] =

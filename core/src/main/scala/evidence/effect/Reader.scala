@@ -14,28 +14,26 @@ object Reader:
 
   private[evidence] final class Ops[A](val dummy: Boolean = true) extends AnyVal:
     def ask[E](using In[Reader[A], E]): Eff[E, A] =
-      Eff.perform[Unit, A, E, Reader[A]](
-        [EE, Ans] => (r: Syn[A, EE, Ans]) => r.ask
-      )(())
+      Eff.perform[Unit, A, E, Reader[A]]([EE, Ans] => (_: Reader[A][EE, Ans]).ask)(())
 
-  def local[A, E, Ans](
-      f: A => A
-  ): Eff[Reader[A] :* E, Ans] => Eff[Reader[A] :* E, Ans] =
-    Eff.handlerHide(
-      new Syn[A, Reader[A] :* E, Ans]:
-        val ask = Op.function(_ => Reader[A].ask.map(f))
-      ,
-      _
-    )
+    def local[E, Ans](
+        f: A => A
+    ): Eff[Reader[A] :* E, Ans] => Eff[Reader[A] :* E, Ans] =
+      Eff.handlerHide(
+        new Syn[A, Reader[A] :* E, Ans]:
+          val ask = Op.function(_ => Reader[A].ask.map(f))
+        ,
+        _
+      )
 
-  def scope[A, E, Ans](
-      a: A
-  ): Eff[Reader[A] :* E, Ans] => Eff[Reader[A] :* E, Ans] = local(_ => a)
+    def scope[E, Ans](
+        a: A
+    ): Eff[Reader[A] :* E, Ans] => Eff[Reader[A] :* E, Ans] = local(_ => a)
 
-  def const[A, E, Ans](a: A): Eff[Reader[A] :* E, Ans] => Eff[E, Ans] =
-    Eff.handler(
-      new Syn[A, E, Ans]:
-        val ask = Op.value(a)
-      ,
-      _
-    )
+    def const[E, Ans](a: A): Eff[Reader[A] :* E, Ans] => Eff[E, Ans] =
+      Eff.handler(
+        new Syn[A, E, Ans]:
+          val ask = Op.value(a)
+        ,
+        _
+      )

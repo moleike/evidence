@@ -31,10 +31,10 @@ object State:
   private[evidence] final class Ops[A](val dummy: Boolean = true) extends AnyVal:
     def get[E](using In[State[A], E]): Eff[E, A] =
       Eff.perform[Unit, A, E, State[A]](
-        [EE, Ans] => (r: Syn[A, EE, Ans]) => r.get
+        [EE, Ans] => (_: State[A][EE, Ans]).get
       )(())
 
     def put[E](a: A)(using In[State[A], E]): Eff[E, Unit] =
       Eff.perform[A, Unit, E, State[A]](
-        [EE, Ans] => (r: Syn[A, EE, Ans]) => r.put
+        [EE, Ans] => (_: State[A][EE, Ans]).put
       )(a)

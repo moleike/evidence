@@ -3,6 +3,7 @@ package effect
 
 import cats.Monoid
 import cats.implicits._
+import evidence.Ctx.In
 
 type Writer[-A] = [E, Ans] =>> Writer.Syn[A, E, Ans]
 
@@ -10,23 +11,24 @@ object Writer:
   trait Syn[-A, E, Ans]:
     def tell: Op[A, Unit, E, Ans]
 
-  def tell[A, E](a: A): Writer[A] :? E ?=> Eff[E, Unit] =
-    Eff.perform[A, Unit, E, Writer[A]](
-      [EE, Ans] => (r: Syn[A, EE, Ans]) => r.tell
-    )(a)
+  def apply[A]: Ops[A] = new Ops[A]
+
+  final class Ops[A](val dummy: Boolean = true) extends AnyVal:
+    def tell[E](a: A)(using In[Writer[A], E]): Eff[E, Unit] =
+      Eff.perform[A, Unit, E, Writer[A]]([EE, Ans] => (_: Writer[A][EE, Ans]).tell)(a)
 
   // TODO add listen as a Writer operation
   def listen[E, A, Ans]: (
       Monoid[A],
       Writer[A] :? E
   ) ?=> Eff[Writer[A] :* E, Ans] => Eff[E, (Ans, A)] = action =>
-    writer(action).flatTap((a, w) => tell(w))
+    writer(action).flatTap((a, w) => Writer[A].tell(w))
 
   def censor[E, A, Ans](f: A => A): (
       Monoid[A],
       Writer[A] :? E
   ) ?=> Eff[Writer[A] :* E, Ans] => Eff[E, Ans] = action =>
-    writer(action).flatMap((a, w) => tell(f(w)).as(a))
+    writer(action).flatMap((a, w) => Writer[A].tell(f(w)).as(a))
 
   def writer[E, A, Ans]
       : Monoid[A] ?=> Eff[Writer[A] :* E, Ans] => Eff[E, (Ans, A)] = action =>
