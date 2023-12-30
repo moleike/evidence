@@ -2,6 +2,7 @@ package evidence
 package effect
 
 import cats.implicits._
+
 import Ctx.*
 
 type Reader[+A] = [E, Ans] =>> Reader.Syn[A, E, Ans]
@@ -12,9 +13,12 @@ object Reader:
 
   def apply[A]: Ops[A] = new Ops[A]
 
-  private[evidence] final class Ops[A](val dummy: Boolean = true) extends AnyVal:
+  private[evidence] final class Ops[A](val dummy: Boolean = true)
+      extends AnyVal:
     def ask[E](using In[Reader[A], E]): Eff[E, A] =
-      Eff.perform[Unit, A, E, Reader[A]]([EE, Ans] => (_: Reader[A][EE, Ans]).ask)(())
+      Eff.perform[Unit, A, E, Reader[A]](
+        [EE, Ans] => (_: Reader[A][EE, Ans]).ask
+      )(())
 
     def local[E, Ans](
         f: A => A

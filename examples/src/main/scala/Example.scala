@@ -13,7 +13,6 @@ import cats.mtl.Tell
 object Example:
 
   def main(args: Array[String]): Unit =
-
     def greet[E]: (Reader[Long] :? E, Reader[String] :? E) ?=> Eff[E, String] =
       for
         p <- Reader[String].ask
@@ -32,13 +31,13 @@ object Example:
 
     // using cats-mtl
 
-    //import Reader.given
+    // import Reader.given
 
-    //def greetMtl[F[_]: Monad](using ask: Ask[F, String]): F[String] =
+    // def greetMtl[F[_]: Monad](using ask: Ask[F, String]): F[String] =
     //  for p <- ask.ask
     //  yield s"Hello, $p"
 
-    //println(Reader.const("mtl")(greetMtl).run)
+    // println(Reader.const("mtl")(greetMtl).run)
 
     // exceptions
 
@@ -62,15 +61,15 @@ object Example:
 
     // using cats-mtl
 
-    //import Except.given
+    // import Except.given
 
-    //def divMtl[F[_]: Applicative](x: Long, y: Long)(implicit
+    // def divMtl[F[_]: Applicative](x: Long, y: Long)(implicit
     //    F: Raise[F, Throwable]
-    //): F[Long] =
+    // ): F[Long] =
     //  if y == 0 then F.raise(new ArithmeticException)
     //  else (x / y).pure
 
-    //def divEff[E](x: Long, y: Long): Except[Throwable] :? E ?=> Eff[E, Long] =
+    // def divEff[E](x: Long, y: Long): Except[Throwable] :? E ?=> Eff[E, Long] =
     //  divMtl[Eff[E, *]](x, y)
 
     def foo[E]: (
@@ -89,7 +88,10 @@ object Example:
 
     println(
       (State
-        .state(0)(Reader[String].const("Joe")(Except[String].handleError(_ => "not Joe")(foo))))
+        .state(0)(
+          Reader[String]
+            .const("Joe")(Except[String].handleError(_ => "not Joe")(foo))
+        ))
         .runC
     )
 
@@ -124,7 +126,7 @@ object Example:
 
     println(NonDet.allResults(xor).run)
 
-    //def logging[F[_]: Monad](implicit F: Tell[F, Log]): F[Unit] =
+    // def logging[F[_]: Monad](implicit F: Tell[F, Log]): F[Unit] =
     //  // Example of some logging activity in your application
     //  for {
     //    _ <- F.tell(Chain.one("First log"))
@@ -146,19 +148,19 @@ object Example:
     ): Writer[Log] :? E ?=> Eff[E, A] =
       logProgram.censor((log: Log) => log.prepend("Hello"))
 
-    //println(
+    // println(
     //  Writer
     //    .writer[Console :* Nothing, Log, Unit](
     //      sendLogsToStdOut(prependMessage(logging))
     //    )
     //    .runC
-    //)
+    // )
 
     def ex2[E]: Chronicle[String] :? E ?=> Eff[E, Int] =
       for
         _ <- Chronicle[String].dictate("foo")
         _ <- Chronicle[String].dictate("bar")
-        //_ <- Chronicle[String].confess("ohoh")
+      // _ <- Chronicle[String].confess("ohoh")
       yield 42
 
     println(Chronicle.materialize[Nothing, String, Int](ex2).run)

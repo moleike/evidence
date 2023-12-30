@@ -2,7 +2,7 @@ package evidence
 
 import java.util.concurrent.atomic.AtomicLong
 
-// An abstract prompt marker
+//An abstract prompt marker
 case class Marker[A](val value: Long) extends AnyVal
 
 object Marker:

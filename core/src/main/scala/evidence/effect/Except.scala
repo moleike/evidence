@@ -13,7 +13,8 @@ object Except:
 
   def apply[A]: Ops[A] = new Ops[A]
 
-  private[evidence] final class Ops[A](val dummy: Boolean = true) extends AnyVal:
+  private[evidence] final class Ops[A](val dummy: Boolean = true)
+      extends AnyVal:
     def raise[E](a: A)(using In[Except[A], E]): Eff[E, Nothing] =
       Eff.perform[A, Nothing, E, Except[A]](
         [E, Ans] => (_: Except[A][E, Ans]).raise
@@ -61,7 +62,6 @@ object Except:
         ,
         _
       )
-
 
 extension [A, E, Ans](eff: Eff[Except[A] :* E, Ans])
   def toEither: Eff[E, Either[A, Ans]] = Except[A].toEither(eff)

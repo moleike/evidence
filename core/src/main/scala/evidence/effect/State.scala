@@ -28,7 +28,8 @@ object State:
         result <- f(init)
       yield result
 
-  private[evidence] final class Ops[A](val dummy: Boolean = true) extends AnyVal:
+  private[evidence] final class Ops[A](val dummy: Boolean = true)
+      extends AnyVal:
     def get[E](using In[State[A], E]): Eff[E, A] =
       Eff.perform[Unit, A, E, State[A]](
         [EE, Ans] => (_: State[A][EE, Ans]).get

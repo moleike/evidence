@@ -15,7 +15,9 @@ object Writer:
 
   final class Ops[A](val dummy: Boolean = true) extends AnyVal:
     def tell[E](a: A)(using In[Writer[A], E]): Eff[E, Unit] =
-      Eff.perform[A, Unit, E, Writer[A]]([EE, Ans] => (_: Writer[A][EE, Ans]).tell)(a)
+      Eff.perform[A, Unit, E, Writer[A]](
+        [EE, Ans] => (_: Writer[A][EE, Ans]).tell
+      )(a)
 
   // TODO add listen as a Writer operation
   def listen[E, A, Ans]: (
@@ -36,7 +38,9 @@ object Writer:
       Eff.handlerHide(
         new Syn[A, State[A] :* E, Ans]:
           val tell =
-            Op.function(x => State[A].get.flatMap(xs => State[A].put(xs.combine(x))))
+            Op.function(x =>
+              State[A].get.flatMap(xs => State[A].put(xs.combine(x)))
+            )
         ,
         action
       )

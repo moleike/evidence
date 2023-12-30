@@ -2,7 +2,7 @@ package evidence
 
 import cats.Monad
 
-// control monad for multi-prompt delimited continuations
+//control monad for multi-prompt delimited continuations
 enum Ctl[+A]:
 
   case Pure(result: A)

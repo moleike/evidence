@@ -7,14 +7,6 @@ import Ctl.*
 trait Op[-A, +B, E, Ans] extends ((Marker[Ans], Ctx[E], A) => Ctl[B])
 
 object Op:
-
-  private def yield_[B, E, Ans](
-      m: Marker[Ans],
-      ctx: Ctx[E],
-      f: (B => Ctl[Ans]) => Eff[E, Ans]
-  ): Ctl[B] =
-    Yield(m, (k: B => Ctl[Ans]) => under(ctx, f(k)), Pure(_))
-
   // general operation with resumptions
   def apply[A, B, E, Ans](
       f: (A, B => Eff[E, Ans]) => Eff[E, Ans]
@@ -33,3 +25,10 @@ object Op:
   // create an operation that never resumes (an exception).
   def except[A, E, Ans](f: A => Eff[E, Ans]): Op[A, Nothing, E, Ans] =
     (m, ctx, x) => yield_(m, ctx, _ => f(x))
+
+  private def yield_[B, E, Ans](
+      m: Marker[Ans],
+      ctx: Ctx[E],
+      f: (B => Ctl[Ans]) => Eff[E, Ans]
+  ): Ctl[B] =
+    Yield(m, (k: B => Ctl[Ans]) => under(ctx, f(k)), Pure(_))

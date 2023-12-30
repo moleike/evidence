@@ -3,9 +3,6 @@ package evidence
 import cats.Monad
 import cats.syntax.all._
 
-import Ctl.*
-import Ctx.*
-
 trait Eff[E, +A] extends (Ctx[E] => Ctl[A])
 
 object Eff:
@@ -35,7 +32,7 @@ object Eff:
       h: H[E, Ans],
       action: Eff[H :* E, Ans]
   ): Eff[E, Ans] = ctx =>
-    prompt(m => under(Ctx.CCons(m, h, identity[Ctx[E]], ctx), action))
+    Ctl.prompt(m => Ctl.under(Ctx.CCons(m, h, identity[Ctx[E]], ctx), action))
 
   def handlerRet[E, Ans, H[_, _], A](
       ret: A => Ans,
@@ -49,8 +46,8 @@ object Eff:
       action: Eff[H :* E, Ans]
   ): Eff[H0 :* E, Ans] =
     case Ctx.CCons(m0, h0, f, cs) =>
-      prompt(m =>
-        under(
+      Ctl.prompt(m =>
+        Ctl.under(
           Ctx.CCons(
             m,
             h,
@@ -63,6 +60,6 @@ object Eff:
 
   extension [A](eff: Eff[Nothing, A])
     def run: A = eff(Ctx.CNil) match
-      case Pure(x) => x
-      case Yield(_, _, _) =>
+      case Ctl.Pure(x) => x
+      case Ctl.Yield(_, _, _) =>
         throw new RuntimeException("Unhandled operation") // should never happen

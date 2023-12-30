@@ -1,6 +1,5 @@
 package evidence
 package effect
-
 import cats.implicits._
 
 type NonDet = [E, Ans] =>> NonDet.Syn[E, Ans]
