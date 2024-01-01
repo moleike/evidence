@@ -1,4 +1,4 @@
-ThisBuild / tlBaseVersion := "0.1" // your current series x.y
+ThisBuild / tlBaseVersion := "0.1"
 
 ThisBuild / organization := "io.github.moleike"
 ThisBuild / startYear := Some(2023)
@@ -11,7 +11,7 @@ ThisBuild / developers ++= List(
 ThisBuild / tlSonatypeUseLegacyHost := false
 
 val Scala3 = "3.3.0"
-ThisBuild / scalaVersion := Scala3 // the default Scala
+ThisBuild / scalaVersion := Scala3
 ThisBuild / semanticdbEnabled := true
 ThisBuild / semanticdbVersion := scalafixSemanticdb.revision
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.6.0"
