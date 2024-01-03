@@ -124,7 +124,7 @@ object Example:
         y <- NonDet.choose
       yield (x && !y) || (!x && y)
 
-    println(NonDet.allResults(xor).run)
+    println(NonDet.allResults[Nothing, Boolean, Vector](xor).run)
 
     // def logging[F[_]: Monad](implicit F: Tell[F, Log]): F[Unit] =
     //  // Example of some logging activity in your application

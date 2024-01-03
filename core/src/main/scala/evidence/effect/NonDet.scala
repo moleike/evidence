@@ -1,6 +1,10 @@
 package evidence
 package effect
+
 import cats.implicits._
+import cats.Alternative
+import evidence.Ctx.In
+import cats.Monad
 
 type NonDet = [E, Ans] =>> NonDet.Syn[E, Ans]
 
@@ -19,16 +23,28 @@ object NonDet:
       [EE, Ans] => (_: NonDet[EE, Ans]).empty
     )(())
 
-  def allResults[E, Ans]: Eff[NonDet :* E, Ans] => Eff[E, Seq[Ans]] =
+  given [E](using In[NonDet, E], Monad[Eff[E, *]]): Alternative[Eff[E, *]]
+  with {
+    def empty[A]: Eff[E, A] = NonDet.empty
+    def pure[A](x: A): Eff[E, A] = Monad[Eff[E, *]].pure(x)
+    def ap[A, B](ff: Eff[E, A => B])(fa: Eff[E, A]): Eff[E, B] =
+      Monad[Eff[E, *]].ap(ff)(fa)
+    def combineK[A](x: Eff[E, A], y: Eff[E, A]): Eff[E, A] =
+      NonDet.choose.ifM(x, y)
+  }
+
+  def allResults[E, A, F[_]](using
+      F: Alternative[F]
+  ): Eff[NonDet :* E, A] => Eff[E, F[A]] =
     Eff.handlerRet(
-      (x: Ans) => Seq(x),
-      new Syn[E, Seq[Ans]]:
-        def empty = Op.except(Function.const(Nil.pure))
+      F.pure[A](_),
+      new Syn[E, F[A]]:
+        def empty = Op.except(Function.const(F.empty.pure))
         def choose = Op((_, k) =>
           for
             xs <- k(false)
             ys <- k(true)
-          yield xs ++ ys
+          yield xs <+> ys
         )
       ,
       _
