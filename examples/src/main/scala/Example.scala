@@ -5,6 +5,8 @@ import evidence.effect.*
 import cats.implicits._
 import cats.Monad
 import cats.Monoid
+import cats.MonoidK
+import cats.Foldable
 import cats.mtl.Ask
 import cats.mtl.Raise
 import cats.data.Chain
@@ -125,6 +127,17 @@ object Example:
       yield (x && !y) || (!x && y)
 
     println(NonDet.allResults[Nothing, Boolean, Vector](xor).run)
+
+    def branches[F[_]: Monad](using
+        F: MonoidK[F],
+        G: Foldable[List]
+    ): F[(Int, Int)] =
+      for
+        x <- G.foldK(List(1, 2, 3).map(_.pure[F]))
+        y <- G.foldK(List(4, 5, 6).map(_.pure[F]))
+      yield (x, y)
+
+    println(NonDet.allResults[Nothing, (Int, Int), Vector](branches).run)
 
     // def logging[F[_]: Monad](implicit F: Tell[F, Log]): F[Unit] =
     //  // Example of some logging activity in your application
