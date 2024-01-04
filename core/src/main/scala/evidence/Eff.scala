@@ -2,6 +2,8 @@ package evidence
 
 import cats.Monad
 import cats.syntax.all._
+import java.util.concurrent.atomic.AtomicReference
+import evidence.Ctx.In
 
 trait Eff[E, +A] extends (Ctx[E] => Ctl[A])
 
@@ -35,10 +37,10 @@ object Eff:
     Ctl.prompt(m => Ctl.under(Ctx.CCons(m, h, identity[Ctx[E]], ctx), action))
 
   def handlerRet[E, Ans, H[_, _], A](
-      ret: A => Ans,
-      h: H[E, Ans],
-      action: Eff[H :* E, A]
-  ): Eff[E, Ans] =
+      ret: Ans => A,
+      h: H[E, A],
+      action: Eff[H :* E, Ans]
+  ): Eff[E, A] =
     handler(h, action.map(ret(_)))
 
   def handlerHide[E, Ans, H[_, _], H0[_, _]](
@@ -57,6 +59,46 @@ object Eff:
           action
         )
       )
+
+  def handlerHideRetEff[E, Ans, H[_, _], H0[_, _], A](
+      ret: Ans => Eff[H0 :* E, A],
+      h: H[H0 :* E, A],
+      action: Eff[H :* E, Ans]
+  ): Eff[H0 :* E, A] =
+    case ctx0 @ Ctx.CCons(m0, h0, f, cs) =>
+      Ctl.prompt(m =>
+        for
+          x <- Ctl.under(
+            Ctx.CCons(
+              m,
+              h,
+              (c: Ctx[E]) => Ctx.CCons(m0, h0, f, c),
+              cs
+            ),
+            action
+          )
+          r <- Ctl.under(ctx0, ret(x))
+        yield r
+      )
+
+  def handlerLocal[E, Ans, H[_, _], A](
+      init: A,
+      h: H[Local[A] :* E, Ans],
+      action: Eff[H :* E, Ans]
+  ): Eff[E, Ans] = Local.local[A, E, Ans](init)(handlerHide(h, action))
+
+  def handlerLocalRet[E, Ans, H[_, _], A, B](
+      init: A,
+      ret: Ans => A => B,
+      h: H[Local[A] :* E, B],
+      action: Eff[H :* E, Ans]
+  ): Eff[E, B] = Local.local[A, E, B](init)(
+    handlerHideRetEff[E, Ans, H, Local[A], B](
+      (a: Ans) => Local.get.map(ret(a)),
+      h,
+      action
+    )
+  )
 
   extension [A](eff: Eff[Nothing, A])
     def run: A = eff(Ctx.CNil) match
