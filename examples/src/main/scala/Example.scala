@@ -177,3 +177,19 @@ object Example:
       yield 42
 
     println(Chronicle.materialize[Nothing, String, Int](ex2).run)
+
+    println(
+      NonDet
+        .allResults[Nothing, (Char, String), Option](
+          Parse.parse("foo")(Parse.symbol('f'))
+        )
+        .run
+    )
+
+    println(
+      NonDet
+        .allResults[Nothing, (Int, String), Option](
+          Parse.parse("12345678*12")(Parse.number)
+        )
+        .run
+    )

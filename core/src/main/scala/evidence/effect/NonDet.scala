@@ -42,8 +42,8 @@ object NonDet:
         def empty = Op.except(Function.const(F.empty.pure))
         def choose = Op((_, k) =>
           for
-            xs <- k(false)
-            ys <- k(true)
+            xs <- k(true)
+            ys <- k(false)
           yield xs <+> ys
         )
       ,
