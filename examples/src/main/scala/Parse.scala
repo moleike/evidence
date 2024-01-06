@@ -13,7 +13,7 @@ type Parse = [E, Ans] =>> Parse.Syn[E, Ans]
 
 object Parse:
 
-  trait Parser[A] extends (String => Option[(A, String)])
+  type Parser[A] = PartialFunction[String, (A, String)]
 
   trait Syn[E, Ans]:
     def satisfy[A]: Op[Parser[A], A, E, Ans]
@@ -47,7 +47,7 @@ object Parse:
           Op((p, k) =>
             for
               input <- State[String].get
-              r <- p(input) match
+              r <- p.unapply(input) match
                 case Some((x, rest)) => State[String].put(rest) *> k(x)
                 case _               => NonDet.empty[State[String] :* E]
             yield r
@@ -57,19 +57,15 @@ object Parse:
     )
 
   def symbol[E](c: Char): Parse :? E ?=> Eff[E, Char] = satisfy {
-    case s if s.nonEmpty && s.charAt(0) == c => Some(c, s.tail)
-    case _                                   => None
+    case s if s.nonEmpty && s.charAt(0) == c => (c, s.tail)
   }
 
-  def string[E](s: String): Parse :? E ?=> Eff[E, String] = satisfy {
-    case t if t.startsWith(s) => Some(s, t.stripPrefix(s))
-    case _                    => None
+  def string[E](t: String): Parse :? E ?=> Eff[E, String] = satisfy {
+    case s if s.startsWith(t) => (t, s.stripPrefix(t))
   }
 
   def digit[E]: Parse :? E ?=> Eff[E, Int] = satisfy {
-    case s if s.nonEmpty && s.charAt(0).isDigit =>
-      Some(s.charAt(0).asDigit, s.tail)
-    case _ => None
+    case s if s.nonEmpty && s.charAt(0).isDigit => (s.charAt(0).asDigit, s.tail)
   }
 
   def number[E]: (Parse :? E, NonDet :? E) ?=> Eff[E, Int] =
