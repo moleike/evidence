@@ -89,12 +89,10 @@ object Example:
       yield str
 
     println(
-      (State
-        .state(0)(
-          Reader[String]
-            .const("Joe")(Except[String].handleError(_ => "not Joe")(foo))
-        ))
-        .runC
+      (State(0)(
+        Reader[String]
+          .const("Joe")(Except[String].handleError(_ => "not Joe")(foo))
+      )).runC
     )
 
     implicitly[ArithmeticException <:< Throwable]
@@ -108,7 +106,7 @@ object Example:
         _ <- State[Boolean].put(!a)
       yield ()
 
-    println(State.state(true)(invert).run)
+    println(State(true)(invert).run)
 
     type Log = Chain[String]
 
@@ -136,6 +134,8 @@ object Example:
         x <- G.foldK(List(1, 2, 3).map(_.pure[F]))
         y <- G.foldK(List(4, 5, 6).map(_.pure[F]))
       yield (x, y)
+
+    println(branches[Vector])
 
     println(NonDet.allResults[Nothing, (Int, Int), Vector](branches).run)
 
@@ -180,16 +180,34 @@ object Example:
 
     println(
       NonDet
-        .allResults[Nothing, (Char, String), Option](
-          Parse.parse("foo")(Parse.symbol('f'))
+        .allResults[Nothing, (Int, String), Option](
+          Parse.parse("999")(Parse.digit)
+        )
+        .run
+    )
+
+    def brackets[E, A](p: Eff[E, A]): Parse :? E ?=> Eff[E, A] =
+      Parse.between(Parse.symbol('['), Parse.symbol(']'))(p)
+
+    println(
+      NonDet
+        .allResults[Nothing, (Int, String), Option](
+          Parse.parse("[12345678]")(
+            brackets(Parse.number)
+          )
         )
         .run
     )
 
     println(
       NonDet
-        .allResults[Nothing, (Int, String), Option](
-          Parse.parse("12345678*12")(Parse.number)
+        .allResults[Nothing, (String, String), Option](
+          Parse.parse("bazz")(
+            Parse.choice(
+              Parse.string("foo") :: Parse
+                .string("bar") :: Parse.string("baz") :: Nil
+            )
+          )
         )
         .run
     )

@@ -2,8 +2,8 @@ package evidence
 
 import cats.Monad
 import cats.syntax.all._
-import java.util.concurrent.atomic.AtomicReference
 import evidence.Ctx.In
+import evidence.effect.State
 
 trait Eff[E, +A] extends (Ctx[E] => Ctl[A])
 
@@ -83,22 +83,23 @@ object Eff:
 
   def handlerLocal[E, Ans, H[_, _], A](
       init: A,
-      h: H[Local[A] :* E, Ans],
+      h: H[State[A] :* E, Ans],
       action: Eff[H :* E, Ans]
-  ): Eff[E, Ans] = Local.local[A, E, Ans](init)(handlerHide(h, action))
+  ): Eff[E, Ans] = State[A, E, Ans](init)(handlerHide(h, action)).map(_._1)
 
   def handlerLocalRet[E, Ans, H[_, _], A, B](
       init: A,
       ret: Ans => A => B,
-      h: H[Local[A] :* E, B],
+      h: H[State[A] :* E, B],
       action: Eff[H :* E, Ans]
-  ): Eff[E, B] = Local.local[A, E, B](init)(
-    handlerHideRetEff[E, Ans, H, Local[A], B](
-      (a: Ans) => Local.get.map(ret(a)),
+  ): Eff[E, B] = State[A, E, B](init)(
+    handlerHideRetEff[E, Ans, H, State[A], B](
+      (a: Ans) => State[A].get.map(ret(a)),
       h,
       action
     )
   )
+    .map(_._1)
 
   extension [A](eff: Eff[Nothing, A])
     def run: A = eff(Ctx.CNil) match

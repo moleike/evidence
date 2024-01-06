@@ -14,7 +14,7 @@ object State:
   def apply[A]: Ops[A] = new Ops[A]
 
   // handler using the state-as-a-function representation
-  def state[A, E, Ans](init: A): Eff[State[A] :* E, Ans] => Eff[E, (Ans, A)] =
+  def apply[A, E, Ans](init: A): Eff[State[A] :* E, Ans] => Eff[E, (Ans, A)] =
     action =>
       for
         f <- Eff.handler(

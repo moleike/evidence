@@ -1,10 +1,10 @@
 package evidence
 package effect
 
-import cats.implicits._
 import cats.Alternative
-import evidence.Ctx.In
 import cats.Monad
+import cats.implicits._
+import evidence.Ctx.In
 
 type NonDet = [E, Ans] =>> NonDet.Syn[E, Ans]
 

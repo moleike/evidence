@@ -5,6 +5,9 @@ import evidence.effect.*
 import cats.implicits._
 import evidence.effect.NonDet.given
 import cats.Alternative
+import cats.Monad
+import cats.MonoidK
+import cats.Foldable
 
 type Parse = [E, Ans] =>> Parse.Syn[E, Ans]
 
@@ -29,20 +32,24 @@ object Parse:
       xs <- many(p)
     yield x :: xs
 
+  def choice[F[_]: Monad, G[_], A](
+      ps: G[F[A]]
+  )(using F: MonoidK[F], G: Foldable[G]): F[A] = G.foldK(ps)
+
   def parse[E, A](
       input: String
   ): NonDet :? E ?=> Eff[Parse :* E, A] => Eff[E, (A, String)] =
     Eff.handlerLocalRet(
       input,
       (x: A) => s => (x, s),
-      new Syn[Local[String] :* E, (A, String)]:
-        def satisfy[AA]: Op[Parser[AA], AA, Local[String] :* E, (A, String)] =
+      new Syn[State[String] :* E, (A, String)]:
+        def satisfy[AA]: Op[Parser[AA], AA, State[String] :* E, (A, String)] =
           Op((p, k) =>
             for
-              input <- Local.get
+              input <- State[String].get
               r <- p(input) match
-                case Some((x, rest)) => Local.put(rest) *> k(x)
-                case _               => NonDet.empty[Local[String] :* E]
+                case Some((x, rest)) => State[String].put(rest) *> k(x)
+                case _               => NonDet.empty[State[String] :* E]
             yield r
           )
       ,
@@ -54,6 +61,11 @@ object Parse:
     case _                                   => None
   }
 
+  def string[E](s: String): Parse :? E ?=> Eff[E, String] = satisfy {
+    case t if t.startsWith(s) => Some(s, t.stripPrefix(s))
+    case _                    => None
+  }
+
   def digit[E]: Parse :? E ?=> Eff[E, Int] = satisfy {
     case s if s.nonEmpty && s.charAt(0).isDigit =>
       Some(s.charAt(0).asDigit, s.tail)
@@ -62,3 +74,8 @@ object Parse:
 
   def number[E]: (Parse :? E, NonDet :? E) ?=> Eff[E, Int] =
     many1(digit).map(_.foldLeft(0)(_ * 10 + _))
+
+  def between[E, A, B, C](
+      `open`: Eff[E, B],
+      close: Eff[E, C]
+  ): Parse :? E ?=> Eff[E, A] => Eff[E, A] = `open` *> _ <* close

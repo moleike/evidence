@@ -34,7 +34,7 @@ object Writer:
 
   def writer[E, A, Ans]
       : Monoid[A] ?=> Eff[Writer[A] :* E, Ans] => Eff[E, (Ans, A)] = action =>
-    State.state(Monoid[A].empty)(
+    State(Monoid[A].empty)(
       Eff.handlerHide(
         new Syn[A, State[A] :* E, Ans]:
           val tell =
