@@ -48,4 +48,4 @@ object Writer:
   extension [E, L, A](eff: Eff[Writer[L, *, *] :* E, A])(using Monoid[L])
     def runW: Eff[E, (A, L)] = writer[E, L, A](eff)
     def censorW(f: L => L): Writer[L, *, *] :? E ?=> Eff[E, A] = censor(f)(eff)
-    def listenW: Writer[L, *, *] :? E ?=> Eff[E, (A, L)] = listen(eff)
+    def listenW: Writer[L, *, *] :? E ?=> Eff[E, (A, L)]       = listen(eff)

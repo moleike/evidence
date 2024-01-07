@@ -24,7 +24,7 @@ object Parse:
 
   def many1[E, A](p: Eff[E, A]): NonDet :? E ?=> Eff[E, List[A]] =
     for
-      x <- p
+      x  <- p
       xs <- many(p)
     yield x :: xs
 
