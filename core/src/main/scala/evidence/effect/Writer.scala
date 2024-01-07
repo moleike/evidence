@@ -11,7 +11,7 @@ object Writer:
   def apply[A]: Ops[A] = new Ops[A]
 
   final class Ops[A](val dummy: Boolean = true) extends AnyVal:
-    def tell[E](a: A)(using Ctx.In[Writer[A, *, *], E]): Eff[E, Unit] =
+    def tell[E](a: A)(using Writer[A, *, *] :? E): Eff[E, Unit] =
       Eff.perform[A, Unit, E, Writer[A, *, *]](
         [EE, Ans] => (_: Writer[A, EE, Ans]).tell
       )(a)

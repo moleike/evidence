@@ -11,7 +11,7 @@ object Reader:
 
   private[evidence] final class Ops[A](val dummy: Boolean = true)
       extends AnyVal:
-    def ask[E](using Ctx.In[Reader[A, *, *], E]): Eff[E, A] =
+    def ask[E](using Reader[A, *, *] :? E): Eff[E, A] =
       Eff.perform[Unit, A, E, Reader[A, *, *]](
         [EE, Ans] => (_: Reader[A, EE, Ans]).ask
       )(())

@@ -22,8 +22,7 @@ object NonDet:
       [EE, Ans] => (_: NonDet[EE, Ans]).empty
     )(())
 
-  given [E](using Ctx.In[NonDet, E], Monad[Eff[E, *]]): Alternative[Eff[E, *]]
-  with {
+  given [E](using NonDet :? E, Monad[Eff[E, *]]): Alternative[Eff[E, *]] with {
     def empty[A]: Eff[E, A]      = NonDet.empty
     def pure[A](x: A): Eff[E, A] = Monad[Eff[E, *]].pure(x)
     def ap[A, B](ff: Eff[E, A => B])(fa: Eff[E, A]): Eff[E, B] =
