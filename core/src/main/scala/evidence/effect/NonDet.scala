@@ -5,6 +5,8 @@ import cats.Alternative
 import cats.Monad
 import cats.implicits._
 import evidence.Ctx.In
+import cats.Foldable
+import cats.MonoidK
 
 type NonDet = [E, Ans] =>> NonDet.Syn[E, Ans]
 
@@ -33,7 +35,11 @@ object NonDet:
       NonDet.choose.ifM(x, y)
   }
 
-  def allResults[E, A, F[_]](using
+  def choice[E, A, G[_]](
+      ps: G[Eff[E, A]]
+  )(using G: Foldable[G], F: MonoidK[Eff[E, *]]): Eff[E, A] = G.foldK(ps)
+
+  def amb[E, A, F[_]](using
       F: Alternative[F]
   ): Eff[NonDet :* E, A] => Eff[E, F[A]] =
     Eff.handlerRet(
@@ -49,3 +55,8 @@ object NonDet:
       ,
       _
     )
+
+  def allResults[E, A]: Eff[NonDet :* E, A] => Eff[E, List[A]] = amb[E, A, List]
+
+  def firstResult[E, A]: Eff[NonDet :* E, A] => Eff[E, Option[A]] =
+    amb[E, A, Option]

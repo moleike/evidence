@@ -4,10 +4,10 @@ import evidence.*
 import evidence.effect.*
 import cats.implicits._
 import evidence.effect.NonDet.given
-import cats.Alternative
 import cats.Monad
 import cats.MonoidK
 import cats.Foldable
+import cats.Alternative
 
 type Parse = [E, Ans] =>> Parse.Syn[E, Ans]
 
@@ -24,17 +24,13 @@ object Parse:
     )(p)
 
   def many[E, A](p: Eff[E, A]): NonDet :? E ?=> Eff[E, List[A]] =
-    Alternative[Eff[E, *]].combineK(many1(p), List.empty[A].pure)
+    Alternative[Eff[E, *]].combineK(many1(p), Nil.pure)
 
   def many1[E, A](p: Eff[E, A]): NonDet :? E ?=> Eff[E, List[A]] =
     for
       x <- p
       xs <- many(p)
     yield x :: xs
-
-  def choice[F[_]: Monad, G[_], A](
-      ps: G[F[A]]
-  )(using F: MonoidK[F], G: Foldable[G]): F[A] = G.foldK(ps)
 
   def parse[E, A](
       input: String

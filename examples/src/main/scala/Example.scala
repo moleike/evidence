@@ -124,7 +124,7 @@ object Example:
         y <- NonDet.choose
       yield (x && !y) || (!x && y)
 
-    println(NonDet.allResults[Nothing, Boolean, Vector](xor).run)
+    println(NonDet.allResults(xor).run)
 
     def branches[F[_]: Monad](using
         F: MonoidK[F],
@@ -135,9 +135,9 @@ object Example:
         y <- G.foldK(List(4, 5, 6).map(_.pure[F]))
       yield (x, y)
 
-    println(branches[Vector])
+    println(branches[List])
 
-    println(NonDet.allResults[Nothing, (Int, Int), Vector](branches).run)
+    println(NonDet.allResults(branches).run)
 
     // def logging[F[_]: Monad](implicit F: Tell[F, Log]): F[Unit] =
     //  // Example of some logging activity in your application
@@ -180,7 +180,7 @@ object Example:
 
     println(
       NonDet
-        .allResults[Nothing, (Int, String), Option](
+        .firstResult(
           Parse.parse("999")(Parse.digit)
         )
         .run
@@ -191,7 +191,7 @@ object Example:
 
     println(
       NonDet
-        .allResults[Nothing, (Int, String), Option](
+        .firstResult(
           Parse.parse("[12345678]")(
             brackets(Parse.number)
           )
@@ -201,9 +201,9 @@ object Example:
 
     println(
       NonDet
-        .allResults[Nothing, (String, String), Option](
+        .firstResult(
           Parse.parse("bazz")(
-            Parse.choice(
+            NonDet.choice(
               Parse.string("foo") :: Parse
                 .string("bar") :: Parse.string("baz") :: Nil
             )
