@@ -2,7 +2,6 @@ package evidence
 package effect
 
 import cats.implicits._
-import evidence.Ctx.In
 
 trait State[A, E, Ans]:
   def get: Op[Unit, A, E, Ans]
@@ -30,12 +29,12 @@ object State:
 
   private[evidence] final class Ops[A](val dummy: Boolean = true)
       extends AnyVal:
-    def get[E](using In[State[A, *, *], E]): Eff[E, A] =
+    def get[E](using Ctx.In[State[A, *, *], E]): Eff[E, A] =
       Eff.perform[Unit, A, E, State[A, *, *]](
         [EE, Ans] => (_: State[A, *, *][EE, Ans]).get
       )(())
 
-    def put[E](a: A)(using In[State[A, *, *], E]): Eff[E, Unit] =
+    def put[E](a: A)(using Ctx.In[State[A, *, *], E]): Eff[E, Unit] =
       Eff.perform[A, Unit, E, State[A, *, *]](
         [EE, Ans] => (_: State[A, *, *][EE, Ans]).put
       )(a)

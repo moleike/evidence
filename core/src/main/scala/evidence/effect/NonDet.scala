@@ -2,11 +2,10 @@ package evidence
 package effect
 
 import cats.Alternative
-import cats.Monad
-import cats.implicits._
-import evidence.Ctx.In
 import cats.Foldable
+import cats.Monad
 import cats.MonoidK
+import cats.implicits._
 
 trait NonDet[E, Ans]:
   def empty: Op[Unit, Nothing, E, Ans]
@@ -23,7 +22,7 @@ object NonDet:
       [EE, Ans] => (_: NonDet[EE, Ans]).empty
     )(())
 
-  given [E](using In[NonDet, E], Monad[Eff[E, *]]): Alternative[Eff[E, *]]
+  given [E](using Ctx.In[NonDet, E], Monad[Eff[E, *]]): Alternative[Eff[E, *]]
   with {
     def empty[A]: Eff[E, A]      = NonDet.empty
     def pure[A](x: A): Eff[E, A] = Monad[Eff[E, *]].pure(x)

@@ -4,7 +4,6 @@ package effect
 import cats.data.Ior
 import cats.implicits._
 import cats.kernel.Semigroup
-import evidence.Ctx.In
 
 // An hybrid error/writer monad that allows both accumulating outputs and
 // aborting computation with a final output.
@@ -19,12 +18,12 @@ object Chronicle:
 
   private[evidence] final class Ops[A](val dummy: Boolean = true)
       extends AnyVal:
-    def confess[E](a: A)(using In[Chronicle[A, *, *], E]): Eff[E, Nothing] =
+    def confess[E](a: A)(using Ctx.In[Chronicle[A, *, *], E]): Eff[E, Nothing] =
       Eff.perform[A, Nothing, E, Chronicle[A, *, *]](
         [E, Ans] => (_: Chronicle[A, *, *][E, Ans]).confess
       )(a)
 
-    def dictate[E](a: A)(using In[Chronicle[A, *, *], E]): Eff[E, Unit] =
+    def dictate[E](a: A)(using Ctx.In[Chronicle[A, *, *], E]): Eff[E, Unit] =
       Eff.perform[A, Unit, E, Chronicle[A, *, *]](
         [EE, Ans] => (_: Chronicle[A, *, *][EE, Ans]).dictate
       )(a)

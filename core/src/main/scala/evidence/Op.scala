@@ -2,8 +2,6 @@ package evidence
 
 import cats.implicits._
 
-import Ctl.*
-
 trait Op[-A, +B, E, Ans] extends ((Marker[Ans], Ctx[E], A) => Ctl[B])
 
 object Op:
@@ -16,7 +14,7 @@ object Op:
   // resume once, more efficient version of:
   // Op((x, k) => f(x).flatMap(k))
   def function[A, B, E, Ans](f: A => Eff[E, B]): Op[A, B, E, Ans] =
-    (_, ctx, x) => under(ctx, f(x))
+    (_, ctx, x) => Ctl.under(ctx, f(x))
 
   // resume with a constant value, same as:
   // Op((_, k) => k(x))
@@ -31,4 +29,4 @@ object Op:
       ctx: Ctx[E],
       f: (B => Ctl[Ans]) => Eff[E, Ans]
   ): Ctl[B] =
-    Yield(m, (k: B => Ctl[Ans]) => under(ctx, f(k)), Pure(_))
+    Ctl.Yield(m, (k: B => Ctl[Ans]) => Ctl.under(ctx, f(k)), Ctl.Pure(_))

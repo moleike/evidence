@@ -3,7 +3,6 @@ package effect
 
 import cats.Monoid
 import cats.implicits._
-import evidence.Ctx.In
 
 trait Writer[-A, E, Ans]:
   def tell: Op[A, Unit, E, Ans]
@@ -12,7 +11,7 @@ object Writer:
   def apply[A]: Ops[A] = new Ops[A]
 
   final class Ops[A](val dummy: Boolean = true) extends AnyVal:
-    def tell[E](a: A)(using In[Writer[A, *, *], E]): Eff[E, Unit] =
+    def tell[E](a: A)(using Ctx.In[Writer[A, *, *], E]): Eff[E, Unit] =
       Eff.perform[A, Unit, E, Writer[A, *, *]](
         [EE, Ans] => (_: Writer[A, EE, Ans]).tell
       )(a)

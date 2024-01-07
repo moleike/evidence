@@ -2,7 +2,6 @@ package evidence
 package effect
 
 import cats.implicits._
-import evidence.Ctx.In
 
 trait Except[-A, E, Ans]:
   def raise: Op[A, Nothing, E, Ans]
@@ -12,7 +11,7 @@ object Except:
 
   private[evidence] final class Ops[A](val dummy: Boolean = true)
       extends AnyVal:
-    def raise[E](a: A)(using In[Except[A, *, *], E]): Eff[E, Nothing] =
+    def raise[E](a: A)(using Ctx.In[Except[A, *, *], E]): Eff[E, Nothing] =
       Eff.perform[A, Nothing, E, Except[A, *, *]](
         [E, Ans] => (_: Except[A, E, Ans]).raise
       )(a)
