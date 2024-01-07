@@ -1,7 +1,6 @@
 package examples
 
 import evidence.*
-import evidence.effect.*
 import cats.implicits._
 import cats.Monad
 import cats.Monoid
@@ -153,13 +152,13 @@ object Example:
         Writer[Log] :? E,
         Monoid[Log]
     ) ?=> Eff[E, A] =
-      logProgram.listen
+      logProgram.listenW
         .flatMap((a, logs) => logs.traverse_(Console.println(_)).as(a))
 
     def prependMessage[E, A](
         logProgram: Eff[Writer[Log] :* E, A]
     ): Writer[Log] :? E ?=> Eff[E, A] =
-      logProgram.censor((log: Log) => log.prepend("Hello"))
+      logProgram.censorW((log: Log) => log.prepend("Hello"))
 
     // println(
     //  Writer

@@ -29,6 +29,6 @@ object Console:
       _
     )
 
-// runs an Eff compuation with default Console handler
-extension [A](eff: Eff[Console :* Nothing, A])
-  def runC: A = Console.console(eff).run
+  // runs an Eff compuation with default Console handler
+  extension [A](eff: Eff[Console :* Nothing, A])
+    def runC: A = Console.console(eff).run

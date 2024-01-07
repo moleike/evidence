@@ -3,7 +3,6 @@ package evidence
 import cats.Monad
 import cats.syntax.all._
 import evidence.Ctx.In
-import evidence.effect.State
 
 trait Eff[E, +A] extends (Ctx[E] => Ctl[A])
 

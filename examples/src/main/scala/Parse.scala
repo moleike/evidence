@@ -1,7 +1,6 @@
 package examples
 
 import evidence.*
-import evidence.effect.*
 import cats.implicits._
 import evidence.effect.NonDet.given
 import cats.Monad
