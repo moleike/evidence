@@ -8,13 +8,11 @@ import evidence.Ctx.In
 import cats.Foldable
 import cats.MonoidK
 
-type NonDet = [E, Ans] =>> NonDet.Syn[E, Ans]
+trait NonDet[E, Ans]:
+  def empty: Op[Unit, Nothing, E, Ans]
+  def choose: Op[Unit, Boolean, E, Ans]
 
 object NonDet:
-  trait Syn[E, Ans]:
-    def empty: Op[Unit, Nothing, E, Ans]
-    def choose: Op[Unit, Boolean, E, Ans]
-
   def choose[E]: NonDet :? E ?=> Eff[E, Boolean] =
     Eff.perform[Unit, Boolean, E, NonDet](
       [EE, Ans] => (_: NonDet[EE, Ans]).choose
@@ -44,7 +42,7 @@ object NonDet:
   ): Eff[NonDet :* E, A] => Eff[E, F[A]] =
     Eff.handlerRet(
       F.pure[A](_),
-      new Syn[E, F[A]]:
+      new NonDet[E, F[A]]:
         def empty = Op.except(Function.const(F.empty.pure))
         def choose = Op((_, k) =>
           for

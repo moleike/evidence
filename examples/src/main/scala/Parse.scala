@@ -9,15 +9,12 @@ import cats.MonoidK
 import cats.Foldable
 import cats.Alternative
 
-type Parse = [E, Ans] =>> Parse.Syn[E, Ans]
+type Parser[A] = PartialFunction[String, (A, String)]
+
+trait Parse[E, Ans]:
+  def satisfy[A]: Op[Parser[A], A, E, Ans]
 
 object Parse:
-
-  type Parser[A] = PartialFunction[String, (A, String)]
-
-  trait Syn[E, Ans]:
-    def satisfy[A]: Op[Parser[A], A, E, Ans]
-
   def satisfy[E, A](p: Parser[A]): Parse :? E ?=> Eff[E, A] =
     Eff.perform[Parser[A], A, E, Parse](
       [EE, Ans] => (_: Parse[EE, Ans]).satisfy[A]
@@ -38,7 +35,7 @@ object Parse:
     Eff.handlerLocalRet(
       input,
       (x: A) => s => (x, s),
-      new Syn[State[String] :* E, (A, String)]:
+      new Parse:
         def satisfy[AA]: Op[Parser[AA], AA, State[String] :* E, (A, String)] =
           Op((p, k) =>
             for

@@ -3,13 +3,11 @@ package effect
 
 import cats.implicits._
 
-type Console = [E, Ans] =>> Console.Syn[E, Ans]
+trait Console[E, Ans]:
+  def println: Op[String, Unit, E, Ans]
+  def readLine: Op[Unit, String, E, Ans]
 
 object Console:
-  trait Syn[E, Ans]:
-    def println: Op[String, Unit, E, Ans]
-    def readLine: Op[Unit, String, E, Ans]
-
   def println[E](msg: String): Console :? E ?=> Eff[E, Unit] =
     Eff.perform[String, Unit, E, Console](
       [EE, Ans] => (_: Console[EE, Ans]).println
@@ -22,7 +20,7 @@ object Console:
 
   def console[E, Ans]: Eff[Console :* E, Ans] => Eff[E, Ans] =
     Eff.handler(
-      new Syn[E, Ans]:
+      new Console:
         val println =
           Op.function[String, Unit, E, Ans](System.out.println(_).pure)
         val readLine =
