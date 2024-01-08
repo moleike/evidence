@@ -1,17 +1,18 @@
 package evidence
+package effect
 
-type Reader[+A]    = [E, Ans] =>> effect.Reader[A, E, Ans]
-type State[A]      = [E, Ans] =>> effect.State[A, E, Ans]
-type Except[-A]    = [E, Ans] =>> effect.Except[A, E, Ans]
-type Writer[-A]    = [E, Ans] =>> effect.Writer[A, E, Ans]
-type Chronicle[-A] = [E, Ans] =>> effect.Chronicle[A, E, Ans]
-type NonDet        = [E, Ans] =>> effect.NonDet[E, Ans]
-type Console       = [E, Ans] =>> effect.Console[E, Ans]
+type Reader[+A]    = [E, Ans] =>> internal.Reader[A, E, Ans]
+type State[A]      = [E, Ans] =>> internal.State[A, E, Ans]
+type Except[-A]    = [E, Ans] =>> internal.Except[A, E, Ans]
+type Writer[-A]    = [E, Ans] =>> internal.Writer[A, E, Ans]
+type Chronicle[-A] = [E, Ans] =>> internal.Chronicle[A, E, Ans]
+type NonDet        = [E, Ans] =>> internal.NonDet[E, Ans]
+type Console       = [E, Ans] =>> internal.Console[E, Ans]
 
-val Reader    = effect.Reader
-val State     = effect.State
-val Except    = effect.Except
-val Writer    = effect.Writer
-val Chronicle = effect.Chronicle
-val NonDet    = effect.NonDet
-val Console   = effect.Console
+val Reader    = internal.Reader
+val State     = internal.State
+val Except    = internal.Except
+val Writer    = internal.Writer
+val Chronicle = internal.Chronicle
+val NonDet    = internal.NonDet
+val Console   = internal.Console

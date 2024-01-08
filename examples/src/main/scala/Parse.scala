@@ -1,6 +1,7 @@
 package examples
 
 import evidence.*
+import evidence.effect.*
 import cats.implicits._
 import evidence.effect.NonDet.given
 import cats.Monad
@@ -41,7 +42,8 @@ object Parse:
               input <- State[String].get
               r <- p.unapply(input) match
                 case Some((x, rest)) => State[String].put(rest) *> k(x)
-                case _               => NonDet.empty[State[String] :* E]
+                case _ =>
+                  State[String].put(input) *> NonDet.empty[State[String] :* E]
             yield r
           )
       ,

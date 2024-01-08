@@ -1,5 +1,5 @@
 package evidence
-package effect
+package internal
 
 import cats.Alternative
 import cats.Foldable

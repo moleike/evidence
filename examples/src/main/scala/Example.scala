@@ -1,6 +1,7 @@
 package examples
 
 import evidence.*
+import evidence.effect.*
 import cats.implicits._
 import cats.Monad
 import cats.Monoid

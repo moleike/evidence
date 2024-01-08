@@ -1,5 +1,5 @@
 package evidence
-package effect
+package internal
 
 import cats.data.Ior
 import cats.implicits._
@@ -8,7 +8,6 @@ import cats.kernel.Semigroup
 // An hybrid error/writer monad that allows both accumulating outputs and
 // aborting computation with a final output.
 //type Chronicle[-A] = [E, Ans] =>> Chronicle.Syn[A, E, Ans]
-
 trait Chronicle[-A, E, Ans]:
   def dictate: Op[A, Unit, E, Ans]
   def confess: Op[A, Nothing, E, Ans]
